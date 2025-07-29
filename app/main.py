@@ -3,6 +3,10 @@ from app.auth import router as auth_router
 from app.leaderboard import router as leaderboard_router
 from database import engine
 from models import Base
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from database import SessionLocal
+from models import User
 
 app = FastAPI()
 # Create DB tables
