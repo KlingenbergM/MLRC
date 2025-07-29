@@ -27,8 +27,8 @@ def login():
 async def callback(code: str, db: Session = Depends(get_db)):
     client_id = os.getenv("STRAVA_CLIENT_ID")
     client_secret = os.getenv("STRAVA_CLIENT_SECRET")
-    redirect_uri = os.getenv("STRAVA_CALLBACK_URL")
     token_url = "https://www.strava.com/oauth/token"
+
     async with httpx.AsyncClient() as client:
         response = await client.post(token_url, data={
             "client_id": client_id,
@@ -38,18 +38,29 @@ async def callback(code: str, db: Session = Depends(get_db)):
         })
 
     data = response.json()
+
+    # Extract user info
     strava_id = data.get("athlete", {}).get("id")
     access_token = data.get("access_token")
     refresh_token = data.get("refresh_token")
-    expires_at = datetime.datetime.fromtimestamp(data.get("expires_at"))
+    expires_at_ts = data.get("expires_at")
 
-    # Save or update user in DB
+    if not strava_id or not access_token:
+        return {"error": "Missing user data from Strava"}
+
+    # Convert expires_at to datetime
+    from datetime import datetime
+    expires_at = datetime.utcfromtimestamp(expires_at_ts)
+
+    # Check if user exists
     user = db.query(User).filter(User.strava_id == strava_id).first()
     if user:
+        # Update
         user.access_token = access_token
         user.refresh_token = refresh_token
         user.expires_at = expires_at
     else:
+        # Create
         user = User(
             strava_id=strava_id,
             access_token=access_token,
@@ -57,9 +68,10 @@ async def callback(code: str, db: Session = Depends(get_db)):
             expires_at=expires_at
         )
         db.add(user)
+
     db.commit()
 
-    return {"message": "Authentication successful", "user": {"strava_id": strava_id}}
+    return {"message": "User saved", "strava_id": strava_id}
 
 @router.get("/users")
 def get_users(db: Session = Depends(get_db)):
