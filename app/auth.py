@@ -3,8 +3,8 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 import httpx, os, datetime
 
-from app.database import SessionLocal
-from app.models import User
+from database import SessionLocal
+from models import User
 
 router = APIRouter()
 
