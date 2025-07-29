@@ -32,7 +32,11 @@ async def segment_test(db: Session = Depends(get_db)):
             headers=headers
         )
         if seg_resp.status_code != 200:
-            return {"error": "Failed to fetch segment metadata"}
+            return {
+                "error": "Failed to fetch segment metadata",
+                "status_code": seg_resp.status_code,
+                "details": seg_resp.text
+            }
 
         segment = seg_resp.json()
         effort_count_total = segment.get("effort_count")
@@ -43,7 +47,11 @@ async def segment_test(db: Session = Depends(get_db)):
             headers=headers
         )
         if eff_resp.status_code != 200:
-            return {"error": "Failed to fetch user efforts"}
+            return {
+                "error": "Failed to fetch user efforts",
+                "status_code": eff_resp.status_code,
+                "details": eff_resp.text  # Debug line
+            }
 
         efforts = eff_resp.json()
 
