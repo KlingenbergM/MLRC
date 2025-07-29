@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 from app.auth import router as auth_router
 from app.leaderboard import router as leaderboard_router
+from database import engine
+from models import Base
 
 app = FastAPI()
+# Create DB tables
+Base.metadata.create_all(bind=engine)
+
 
 @app.get("/")
 def root():
