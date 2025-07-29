@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.models import User
-from app.database import SessionLocal
+from models import User
+from database import SessionLocal
 import os
 import httpx
 from datetime import datetime, timedelta
